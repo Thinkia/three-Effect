@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Effect -- shineHeart</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<div id="info">
+		</div>
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+			import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+			import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+			import { ShaderPass } from './jsm/postprocessing/ShaderPass.js';
+			import { OutlinePass } from './jsm/postprocessing/OutlinePass.js';
+			import { FXAAShader } from './jsm/shaders/FXAAShader.js';
+			import { AfterimagePass } from './jsm/postprocessing/AfterimagePass.js';
+			let shineAlpha,shineBeta
+			let afterimagePass
+			let container, stats;
+			let camera, scene, renderer;
+			let mouse = new THREE.Vector2();
+			let selectedObjects = [];
+			let heartLine
+			let composer, effectFXAA, outlinePass;
+			let maxTimes, times=0;
+			let maxNum = 1,num =0;
+
+			// 泛光参数
+			let params = {
+				edgeStrength: 4.4,
+				edgeGlow: 1.0,
+				edgeThickness: 3.7,
+				pulsePeriod: 5.0,
+				visibleEdgeColor: '#ff0000',
+				hiddenEdgeColor: '#190a05'
+			};
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				let width = window.innerWidth;
+				let height = window.innerHeight;
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( width, height );
+				document.body.appendChild( renderer.domElement );
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 100 );
+				camera.position.set( 0, 0, 100 );
+
+				composer = new EffectComposer( renderer );
+				let renderPass = new RenderPass( scene, camera );
+				composer.addPass( renderPass );
+
+				outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
+				composer.addPass( outlinePass );
+
+				effectFXAA = new ShaderPass( FXAAShader );
+				effectFXAA.uniforms.resolution.value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+				composer.addPass( effectFXAA );
+
+				afterimagePass = new AfterimagePass();
+				afterimagePass.uniforms[ "damp" ].value = 0.98
+				composer.addPass( afterimagePass );
+
+				outlinePass.edgeStrength = params.edgeStrength
+				outlinePass.edgeGlow = params.edgeGlow
+				outlinePass.edgeThickness = params.edgeThickness
+				outlinePass.pulsePeriod = params.pulsePeriod
+				outlinePass.visibleEdgeColor.set(params.visibleEdgeColor)
+				outlinePass.hiddenEdgeColor.set(params.hiddenEdgeColor)
+
+				let geometry = new THREE.SphereBufferGeometry( 0.5, 64, 64 )
+				let material = new THREE.MeshBasicMaterial({color:0xff0000});
+				shineAlpha = new THREE.Mesh( geometry, material );
+				shineBeta = new THREE.Mesh( geometry, material );
+				scene.add( shineAlpha );
+				scene.add( shineBeta );
+				selectedObjects = [];
+
+
+				let material2 = new THREE.LineBasicMaterial({
+					color: 0xff0000
+				});
+				let geometry2 = new THREE.Geometry();
+
+				// 顶点数
+				let n =400;
+
+				// 爱心缩放系数
+				let a = 2;
+
+				// 桃心方程
+				for ( let i =1;i<n;i++)
+				{
+					let theta = i *2.0 * Math.PI /n;
+					let x = 16*Math.pow(Math.sin(theta),3);
+					let y = 13*Math.cos(theta) - 5*Math.cos(2*theta)-2*Math.cos(3*theta) -Math.cos(4*theta);
+					geometry2.vertices.push(new THREE.Vector3( a*x, a*y, 0 ));
+				}
+
+				heartLine = new THREE.Line( geometry2, material2 );
+				selectedObjects.push(shineAlpha)
+				selectedObjects.push(shineBeta)
+				outlinePass.selectedObjects = selectedObjects;
+				scene.add( heartLine );
+				maxTimes = heartLine.geometry.vertices.length
+				maxNum = maxTimes
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				shineAlpha.position.copy(heartLine.geometry.vertices[times])
+				times++
+				if( times == maxTimes) times = 0
+
+				maxNum--
+				shineBeta.position.copy(heartLine.geometry.vertices[maxNum])
+				if(maxNum == num) maxNum = heartLine.geometry.vertices.length
+
+				composer.render();
+
+			}
+
+		</script>
+	</body>
+</html>
