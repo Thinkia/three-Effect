@@ -28,7 +28,6 @@
 			let heartLine
 			let composer, effectFXAA, outlinePass;
 			let maxTimes, times=0;
-			let maxNum = 1,num =0;
 
 			// 泛光参数
 			let params = {
@@ -96,7 +95,7 @@
 				let n =400;
 
 				// 桃心缩放系数
-				let a = 1.6;
+				let a = 1.5;
 
 				// 桃心方程
 				for ( let i =1;i<n;i++)
@@ -113,22 +112,16 @@
 				outlinePass.selectedObjects = selectedObjects;
 				scene.add( heartLine );
 				maxTimes = heartLine.geometry.vertices.length
-				maxNum = maxTimes
 			}
 
 			function animate() {
 
 				requestAnimationFrame( animate );
 				shineAlpha.position.copy(heartLine.geometry.vertices[times])
+                shineBeta.position.copy(heartLine.geometry.vertices[maxTimes - 1 - times])
 				times++
 				if( times == maxTimes) times = 0
-
-				maxNum--
-				shineBeta.position.copy(heartLine.geometry.vertices[maxNum])
-				if(maxNum == num) maxNum = heartLine.geometry.vertices.length
-
 				composer.render();
-
 			}
 
 		</script>
