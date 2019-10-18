@@ -18,7 +18,9 @@
   let labelPos = new THREE.Vector3(halfBoxSize,halfBoxSize,halfBoxSize);
   let worldDir = new THREE.Vector3();
   let tempPos = new THREE.Vector3();
+  let pos,angle,angle2;
   let label_dom
+  let screen
   init();
   animate();
   function init() {
@@ -57,7 +59,7 @@
   // 坐标转换
   function coordTransform (vec3) {
     if(!vec3.isVector3) return
-    let pos = tempPos.copy(vec3)
+    pos = tempPos.copy(vec3)
     pos.project(camera)
     pos.normalize()
     const screen = { x: 0, y: 0 }
@@ -65,8 +67,8 @@
     screen.y = window.innerHeight * (1 - pos.y) / 2
     pos.copy(vec3)
     pos.sub(camera.position)
-    let angle = camera.getWorldDirection(worldDir).angleTo(pos)
-    let angle2 = Math.cos(camera.fov)
+    angle = camera.getWorldDirection(worldDir).angleTo(pos)
+    angle2 = Math.cos(camera.fov)
     // 取中心区域
     if (isNaN(screen.x) || isNaN(screen.y) || angle > angle2) {
       screen.x = -500
@@ -76,7 +78,7 @@
   }
 
   function setLabel() {
-    let screen = coordTransform(labelPos)
+    screen = coordTransform(labelPos)
     // 防抖
     label_dom.style.left = `${Math.floor(screen.x)}px`
     label_dom.style.top = `${Math.floor(screen.y)}px`
