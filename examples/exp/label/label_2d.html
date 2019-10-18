@@ -16,9 +16,8 @@
   let boxSize = 200
   let halfBoxSize = boxSize /2
   let labelPos = new THREE.Vector3(halfBoxSize,halfBoxSize,halfBoxSize);
-  let worldDir = new THREE.Vector3();
   let tempPos = new THREE.Vector3();
-  let pos,angle,angle2;
+  let pos
   let label_dom
   let screen
   init();
@@ -26,7 +25,6 @@
   function init() {
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 4000 );
     camera.position.z = 400;
-
     scene = new THREE.Scene();
     let geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
     let material = new THREE.MeshBasicMaterial( {color:0xff0000, wireframe: true } );
@@ -59,22 +57,14 @@
   // 坐标转换
   function coordTransform (vec3) {
     if(!vec3.isVector3) return
-    pos = tempPos.copy(vec3)
-    pos.project(camera)
-    pos.normalize()
-    const screen = { x: 0, y: 0 }
-    screen.x = window.innerWidth * (pos.x + 1) / 2
-    screen.y = window.innerHeight * (1 - pos.y) / 2
-    pos.copy(vec3)
-    pos.sub(camera.position)
-    angle = camera.getWorldDirection(worldDir).angleTo(pos)
-    angle2 = Math.cos(camera.fov)
-    // 取中心区域
-    if (isNaN(screen.x) || isNaN(screen.y) || angle > angle2) {
-      screen.x = -500
-      screen.y = -500
-    }
-    return screen
+    let screen = { x: 0, y: 0 }
+    return function screenPos (){
+      pos = tempPos.copy(vec3)
+      pos.project(camera)
+      screen.x = window.innerWidth * (pos.x + 1) / 2
+      screen.y = window.innerHeight * (1 - pos.y) / 2
+      return screen
+    }()
   }
 
   function setLabel() {
