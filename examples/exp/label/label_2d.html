@@ -40,6 +40,7 @@
     createLabel()
     window.addEventListener( 'resize', onWindowResize, false );
   }
+  // dom  div
   function createLabel() {
     label_dom = document.createElement('div')
     label_dom.style = `
@@ -57,8 +58,6 @@
   function coordTransform (vec3) {
     if(!vec3.isVector3) return
     let pos = tempPos.copy(vec3)
-    camera.updateWorldMatrix();
-    camera.updateProjectionMatrix()
     pos.project(camera)
     pos.normalize()
     const screen = { x: 0, y: 0 }
@@ -68,6 +67,7 @@
     pos.sub(camera.position)
     let angle = camera.getWorldDirection(worldDir).angleTo(pos)
     let angle2 = Math.cos(camera.fov)
+    // 取中心区域
     if (isNaN(screen.x) || isNaN(screen.y) || angle > angle2) {
       screen.x = -500
       screen.y = -500
@@ -77,6 +77,7 @@
 
   function setLabel() {
     let screen = coordTransform(labelPos)
+    // 防抖
     label_dom.style.left = `${Math.floor(screen.x)}px`
     label_dom.style.top = `${Math.floor(screen.y)}px`
   }

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Exp -- label_3d</title>
+    <meta charset="utf-8">
+    <link type="text/css" rel="stylesheet" href="../../main.css">
+</head>
+<body>
+<script type="module">
+
+  import * as THREE from '../../../build/three.module.js';
+  import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+  let camera, scene, renderer;
+  let controls;
+  let mesh;
+  let boxSize = 200
+  let halfBoxSize = boxSize /2
+  let labelPos = new THREE.Vector3(halfBoxSize,halfBoxSize,halfBoxSize);
+  let label_3d
+  let up = new THREE.Vector3();
+  let mat4 = new THREE.Matrix4();
+  init();
+  animate();
+  function init() {
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 4000 );
+    camera.position.z = 400;
+
+    scene = new THREE.Scene();
+    let geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
+    let material = new THREE.MeshBasicMaterial( {color:0xff0000, wireframe: true } );
+
+    mesh = new THREE.Mesh( geometry, material );
+    scene.add( mesh );
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+    controls = new OrbitControls( camera, renderer.domElement );
+
+    createLabel()
+    window.addEventListener( 'resize', onWindowResize, false );
+  }
+  // textPlan
+  function createLabel() {
+    let text = '三维标签'
+    let planSize = 20
+    let label = text2Canvas({textString:text})
+    let texture = new THREE.CanvasTexture(label)
+    let geo = new THREE.PlaneBufferGeometry(text.length * planSize,planSize)
+    let mat = new THREE.MeshBasicMaterial({map:texture})
+    label_3d = new THREE.Mesh(geo,mat)
+    label_3d.position.copy(labelPos)
+    scene.add(label_3d)
+  }
+  // 朝向相机
+  function lookAtCamera(mesh,camera){
+    if(!mesh.isMesh) return
+    // 取camera 矩阵的y列
+    up.setFromMatrixColumn(camera.matrix,1);
+    // eye  target  up
+    mat4.lookAt(camera.position,mesh.position,up);
+
+    mesh.quaternion.setFromRotationMatrix(mat4);
+
+  }
+  /**
+   * todo 使用画布渲染文字内容
+   * @param textString 文字内容
+   * @param fontSize 字体大小，会影响分辨率
+   * @param radius 圆角像素值
+   * @param fillColor 画布背景色
+   * @param textColor 文字填充色
+   * @returns {HTMLElement}
+   */
+  function text2Canvas({textString='', fontSize = 128, radius, fillColor = 'rgba(0,0,0,0.7)', textColor = 'white'}) {
+
+    // 绘制圆角矩形
+    let roundRect = function(ctx ,x, y, width, height, radius = 5, fill, stroke = false) {
+      if (width < 2 * radius) {
+        radius = width / 2
+      }
+      if (height < 2 * radius) {
+        radius = height / 2
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (stroke) {
+        ctx.stroke();
+      }
+      if (fill) {
+        ctx.fill();
+      }
+    };
+
+    // 根据字数动态设置画布大小，注意，画布大小仅影响canvas的分辨率，和实际的三维物体大小无关
+    let wordsNum = textString.length;
+    let csWidth = wordsNum * fontSize * 1.2;
+    let csHeight = fontSize * 1.7;
+
+    if (typeof radius !== "number") {
+      radius = csHeight / 6;
+    }
+
+    let cs = document.createElement('canvas');
+    cs.width = csWidth;
+    cs.height = csHeight;
+    let ctx = cs.getContext('2d');
+
+    ctx.fillStyle = fillColor;
+    roundRect(ctx, 0, 0, csWidth, csHeight, radius, true);
+
+    ctx.font = fontSize + "px 思源黑体 CN Regular, Microsoft YaHei, PingFang SC, SimYou, YouYuan, sans-serif";
+    // ctx.font = fontSize + "px Arial";
+    ctx.fillStyle = textColor;
+    // 文字位于画布中心位置
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(textString, csWidth / 2, csHeight / 2);
+
+    return cs;
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+  function animate() {
+    requestAnimationFrame( animate );
+    controls.update()
+    lookAtCamera(label_3d,camera)
+    renderer.render( scene, camera );
+  }
+
+</script>
+</body>
+</html>
