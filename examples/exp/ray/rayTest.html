@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Exp -- rayTest</title>
+    <meta charset="utf-8">
+    <link type="text/css" rel="stylesheet" href="../../main.css">
+</head>
+<body>
+<script type="module">
+
+  import * as THREE from '../../../build/three.module.js';
+  import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+  let camera, scene, renderer;
+  let controls;
+  let box;
+  let boxSize = 100
+  let colorAlpha = 0xff0000
+  let colorBeat = 0x0000ff
+  let colorTemp = 0xff0000
+  let raycaster = new THREE.Raycaster()
+  let mouse = new THREE.Vector2()
+  init();
+  animate();
+  function init() {
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 4000 );
+    camera.position.z = 400;
+    scene = new THREE.Scene();
+    let geometry = new THREE.BoxBufferGeometry( boxSize, boxSize, boxSize );
+    let material = new THREE.MeshBasicMaterial( {color:colorAlpha } );
+
+    box = new THREE.Mesh( geometry, material );
+    scene.add( box );
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+    controls = new OrbitControls( camera, renderer.domElement );
+
+    window.addEventListener( 'resize', onWindowResize, false );
+    window.addEventListener( 'click', onClick, false );
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+
+  function onClick( event ) {
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    raycaster.setFromCamera( mouse, camera );
+    let intersect = raycaster.intersectObject( box );
+    if (intersect.length > 0 ) {
+      colorTemp === colorAlpha ? colorTemp = colorBeat : colorTemp = colorAlpha;
+      intersect[0].object.material.color.setHex(colorTemp);
+    }
+  }
+  function animate() {
+    requestAnimationFrame( animate );
+    controls.update()
+    renderer.render( scene, camera );
+  }
+
+</script>
+</body>
+</html>
