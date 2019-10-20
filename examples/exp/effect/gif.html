@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Exp -- label_2d</title>
+    <title>Exp -- gifEffect</title>
     <meta charset="utf-8">
-   <link type="text/css" rel="stylesheet" href="../../main.css">
+    <link type="text/css" rel="stylesheet" href="../../main.css">
 </head>
 <body>
 <script type="module">
@@ -14,64 +14,54 @@
   let controls;
   let box;
   let boxSize = 200
-  let halfBoxSize = boxSize /2
-  let labelPos = new THREE.Vector3(halfBoxSize,halfBoxSize,halfBoxSize);
-  let tempPos = new THREE.Vector3();
-  let pos
-  let label_dom
-  let screen
+
+  let textureLoader = new THREE.TextureLoader()
+  let url = '../../img/effect/'
+
+  let times = 0 , maxTimes = 60 * 1;
+  let count = 0, maxCount = 2 ;
+  let a =[]
   init();
   animate();
   function init() {
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 4000 );
     camera.position.z = 400;
     scene = new THREE.Scene();
+
+    initTexture()
+
+    let material = new THREE.MeshBasicMaterial( {map:a[0]} );
     let geometry = new THREE.BoxBufferGeometry( boxSize, boxSize, boxSize );
-    let material = new THREE.MeshBasicMaterial( {color:0xff0000, wireframe: true } );
 
     box = new THREE.Mesh( geometry, material );
     scene.add( box );
+
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
 
     controls = new OrbitControls( camera, renderer.domElement );
 
-    createLabel()
     window.addEventListener( 'resize', onWindowResize, false );
   }
-  // dom  div
-  function createLabel() {
-    label_dom = document.createElement('div')
-    label_dom.style = `
-    color:0x000000;
-    font-size:16px;
-    position:fixed;
-    top:0px;
-    left:0px;
-    `
-    label_dom.innerHTML = '二维标签'
-    document.body.appendChild(label_dom)
 
-  }
-  // 坐标转换
-  function coordTransform (vec3) {
-    if(!vec3.isVector3) return
-    let screen = { x: 0, y: 0 }
-    return function screenPos (){
-      pos = tempPos.copy(vec3)
-      pos.project(camera)
-      screen.x = window.innerWidth * (pos.x + 1) / 2
-      screen.y = window.innerHeight * (1 - pos.y) / 2
-      return screen
-    }()
+  function initTexture(num = maxCount) {
+    for(let i =0;i < num ; i++) {
+      a[i] = textureLoader.load(`${url}gif${i+1}.png`)
+    }
   }
 
-  function setLabel() {
-    screen = coordTransform(labelPos)
-    // 防抖
-    label_dom.style.left = `${Math.floor(screen.x)}px`
-    label_dom.style.top = `${Math.floor(screen.y)}px`
+  // 动画执行
+  function gifAni() {
+    if ( times === maxTimes ) {
+      times = 0;
+      box.material.map = a[count];
+      count++;
+      if( count === maxCount) {
+        count = 0
+      }
+    }
+    times++;
   }
 
   function onWindowResize() {
@@ -79,10 +69,11 @@
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
+
   function animate() {
     requestAnimationFrame( animate );
+    gifAni()
     controls.update()
-    setLabel()
     renderer.render( scene, camera );
   }
 
