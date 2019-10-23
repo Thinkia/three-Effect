@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>three.js webgl - OBJLoader + MTLLoader</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../main.css">
+</head>
+
+<body>
+<div id="info"></div>
+
+<script src="../../../build/thinkia.js"></script>
+
+<script type="module">
+
+  import * as THREE from '../../../build/three.module.js';
+
+  import { MTLLoader } from '../../jsm/loaders/MTLLoader.js';
+  import { OBJLoader } from '../../jsm/loaders/OBJLoader.js';
+  import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+
+  let container;
+
+  // thinkia
+  let ia = Ia()
+  let iaWorld = ia.world
+  ia.colorful.useSimplePoint(3)
+
+  let camera, scene, renderer;
+
+  let controls;
+
+  let windowHalfX = window.innerWidth / 2;
+  let windowHalfY = window.innerHeight / 2;
+
+  let positions = []
+  let colors = []
+  let points = []
+  let pointsMod = []
+
+  let buffers;
+
+  let canvas;
+
+  let times=0
+  let maxTimes
+
+  let drawPoint = function () {
+
+  };
+
+  init();
+  animate();
+
+
+  function init() {
+
+    container = document.createElement( 'div' );
+    document.body.appendChild( container );
+
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.position.z = 250;
+
+    // scene
+
+    scene = new THREE.Scene();
+
+    var ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
+    scene.add( ambientLight );
+
+    var pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+    camera.add( pointLight );
+    scene.add( camera );
+
+    // model
+
+    var onProgress = function ( xhr ) {
+
+      if ( xhr.lengthComputable ) {
+
+        var percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+
+      }
+
+    };
+
+    var onError = function () { };
+
+    var manager = new THREE.LoadingManager();
+    // manager.addHandler( /\.dds$/i, new DDSLoader() );
+
+    //
+
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
+
+    canvas = document.createElement('canvas')
+    canvas.id = 'glcanvas'
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    canvas.style.position = 'fixed'
+    canvas.style.top = '0px'
+    canvas.style.left = '0px'
+    canvas.style.pointerEvents = 'none'
+
+    container.appendChild( canvas );
+
+
+    controls = new OrbitControls( camera, renderer.domElement );
+
+    new MTLLoader( manager )
+      .setPath( '../../models/lineAni/' )
+      .load( 'rd_light_01.mtl', function ( materials ) {
+
+        materials.preload();
+
+        new OBJLoader( manager )
+          .setMaterials( materials )
+          .setPath( '../../models/lineAni/' )
+          .load( 'rd_light_01.obj', function ( object ) {
+
+            let vec3 = []
+            let array = object.children[0].geometry.attributes.position.array
+            let length = array.length / 3
+
+            for (let i = 0; i < length; i++) {
+              vec3.push( new THREE.Vector3(array[3 * i] ,array[3 * i + 1] ,array[3 * i + 2]  ))
+            }
+            let curve = new THREE.CatmullRomCurve3( vec3 );
+            points =  curve.getPoints( 100 )
+
+            for(let i = 0;i < points.length - 1 ; i++) {
+              pointsMod.push(points[i])
+              let n ;
+              let disTance = points[i].distanceTo(points[i+1])
+              if(disTance > 0.3) {
+                n = Math.floor(disTance/0.3)
+                for(let j = 0; j < n; j++) {
+                  let x = (points[i+1].x - points[i].x )  * j/n +points[i].x
+                  let y = (points[i+1].y - points[i].y )  * j/n +points[i].y
+                  let z = (points[i+1].z - points[i].z )  * j/n +points[i].z
+                  pointsMod.push(new THREE.Vector3(x,y,z))
+                }
+              }
+            }
+
+            maxTimes = pointsMod.length
+
+             iaWorld.initIaWorld(false);
+            // 开启混合，透明模式
+            iaWorld.blend2opacity()
+            buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
+
+            drawPoint = function() {
+
+              times++
+              colors.push(1.0,0.0,0.0,1.0)
+              // 衰减效果
+              for (let i =1;i<times;i++) {
+                colors[ i*4 - 1] -=0.008
+              }
+              positions.push(pointsMod[times].x,pointsMod[times].y,pointsMod[times].z)
+              // 清除buffer
+              iaWorld.gl.deleteBuffer(buffers.color)
+              iaWorld.gl.deleteBuffer(buffers.position)
+              // 创建新buffer
+              buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
+
+              if (times == maxTimes - 1 )
+              {
+                times = 0
+                colors = []
+                positions=[]
+              }
+
+              iaWorld.helloIaWorld( buffers,false );
+              iaWorld.drawPoints(6)
+
+            }
+
+            scene.add( object );
+
+          }, onProgress, onError );
+
+      } );
+
+
+    window.addEventListener( 'resize', onWindowResize, false );
+
+  }
+
+  function onWindowResize() {
+
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+  }
+
+
+  function animate() {
+
+    controls.update()
+
+    requestAnimationFrame( animate );
+    render();
+
+  }
+
+  function render() {
+
+    for (let i= 0 ;i <ia.view.mat4.length; i++) {
+      ia.view.mat4[i] = camera.matrixWorldInverse.elements[i]
+      ia.eyes.mat4[i] = camera.projectionMatrix.elements[i]
+    }
+
+    // camera.lookAt( scene.position );
+
+    renderer.render( scene, camera );
+     drawPoint()
+
+  }
+
+</script>
+
+</body>
+</html>
