@@ -34,12 +34,12 @@
   let windowHalfX = window.innerWidth / 2;
   let windowHalfY = window.innerHeight / 2;
 
-  let positions = []
-  let colors = []
-  let points = []
-  let pointsMod = []
+
+  let lineInfo = []
 
   let buffers;
+  let positions = [];
+  let colors = [];
 
   let canvas;
 
@@ -121,64 +121,150 @@
         new OBJLoader( manager )
           .setMaterials( materials )
           .setPath( '../../models/lineAni/' )
-          .load( 'rd_light_01.obj', function ( object ) {
+          .load( 'line2.obj', function ( object ) {
 
-            let vec3 = []
-            let array = object.children[0].geometry.attributes.position.array
-            let length = array.length / 3
+            for( let i=0; i<object.children.length;i++) {
+              lineInfo[i] = {}
+              lineInfo[i].ia = new Ia();
+              lineInfo[i].iaWorld = ia.world
+              lineInfo[i].ia.colorful.useSimplePoint(3)
+              lineInfo[i].buffer = ''
+              lineInfo[i].times = 0
+              lineInfo[i].colors = []
+              lineInfo[i].positions = []
 
-            for (let i = 0; i < length; i++) {
-              vec3.push( new THREE.Vector3(array[3 * i] ,array[3 * i + 1] ,array[3 * i + 2]  ))
-            }
-            let curve = new THREE.CatmullRomCurve3( vec3 );
-            points =  curve.getPoints( 100 )
+              lineInfo[i].pointsMod= []
+              if(object.children[i].name.includes('xi')) {
+                lineInfo[i].name = 'xi'
+                lineInfo[i].size = 2
+                lineInfo[i].color = [1.0,0.0,0.0,1.0]
 
-            for(let i = 0;i < points.length - 1 ; i++) {
-              pointsMod.push(points[i])
-              let n ;
-              let disTance = points[i].distanceTo(points[i+1])
-              if(disTance > 0.3) {
-                n = Math.floor(disTance/0.3)
-                for(let j = 0; j < n; j++) {
-                  let x = (points[i+1].x - points[i].x )  * j/n +points[i].x
-                  let y = (points[i+1].y - points[i].y )  * j/n +points[i].y
-                  let z = (points[i+1].z - points[i].z )  * j/n +points[i].z
-                  pointsMod.push(new THREE.Vector3(x,y,z))
+              } else if(object.children[i].name.includes('zhong')) {
+                lineInfo[i].name = 'zhong'
+                lineInfo[i].size = 4
+                lineInfo[i].color = [0.0,1.0,0.0,1.0]
+              } else if(object.children[i].name.includes('cu')) {
+                lineInfo[i].name = 'cu'
+                lineInfo[i].size = 6
+                lineInfo[i].color = [1.0,0.0,1.0,1.0]
+              }
+
+              let vec3 = []
+              let array = object.children[i].geometry.attributes.position.array
+              let length = object.children[i].geometry.attributes.position.array.length/3
+
+              for (let j = 0; j < length; j++) {
+                vec3.push( new THREE.Vector3(array[3 * j] ,array[3 * j + 1] ,array[3 * j + 2]  ))
+              }
+              let curve = new THREE.CatmullRomCurve3( vec3 );
+              let points =  curve.getPoints( 100 )
+
+              for(let k = 0;k < points.length - 1 ; k++) {
+                lineInfo[i].pointsMod.push(points[k])
+                let n ;
+                let disTance = points[k].distanceTo(points[k+1])
+                if(disTance > 0.1) {
+                  n = Math.floor(disTance/0.1)
+                  for(let m = 0; m < n; m++) {
+                    let x = (points[k+1].x - points[k].x )  * m/n +points[k].x
+                    let y = (points[k+1].y - points[k].y )  * m/n +points[k].y
+                    let z = (points[k+1].z - points[k].z )  * m/n +points[k].z
+                    lineInfo[i].pointsMod.push(new THREE.Vector3(x,y,z))
+                  }
                 }
               }
+
+              lineInfo[i].maxTimes = lineInfo[i].pointsMod.length
+
             }
 
-            maxTimes = pointsMod.length
+            // let vec3 = []
+            // let array = object.children[3].geometry.attributes.position.array
+            // let length = array.length / 3
+            //
+            // for (let i = 0; i < length; i++) {
+            //   vec3.push( new THREE.Vector3(array[3 * i] ,array[3 * i + 1] ,array[3 * i + 2]  ))
+            // }
+            // let curve = new THREE.CatmullRomCurve3( vec3 );
+            // points =  curve.getPoints( 100 )
+            //
+            // for(let i = 0;i < points.length - 1 ; i++) {
+            //   pointsMod.push(points[i])
+            //   let n ;
+            //   let disTance = points[i].distanceTo(points[i+1])
+            //   if(disTance > 0.1) {
+            //     n = Math.floor(disTance/0.1)
+            //     for(let j = 0; j < n; j++) {
+            //       let x = (points[i+1].x - points[i].x )  * j/n +points[i].x
+            //       let y = (points[i+1].y - points[i].y )  * j/n +points[i].y
+            //       let z = (points[i+1].z - points[i].z )  * j/n +points[i].z
+            //       pointsMod.push(new THREE.Vector3(x,y,z))
+            //     }
+            //   }
+            // }
+            //
+            //
+            // maxTimes = pointsMod.length
 
              iaWorld.initIaWorld(false);
             // 开启混合，透明模式
             iaWorld.blend2opacity()
-            buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
+
+
+           // buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
 
             drawPoint = function() {
 
-              times++
-              colors.push(1.0,0.0,0.0,1.0)
-              // 衰减效果
-              for (let i =1;i<times;i++) {
-                colors[ i*4 - 1] -=0.008
+              for(let i = 0; i<lineInfo.length; i++) {
+
+               // lineInfo[i].buffers = lineInfo[i].iaWorld.buffer.positionBuffer.initBuffer( lineInfo[i].positions ,lineInfo[i].colors )
+
+                lineInfo[i].times+=5
+                lineInfo[i].colors.push(lineInfo[i].color[0],lineInfo[i].color[1],lineInfo[i].color[2],lineInfo[i].color[3])
+                lineInfo[i].colors.push(lineInfo[i].color[0],lineInfo[i].color[1],lineInfo[i].color[2],lineInfo[i].color[3])
+                lineInfo[i].colors.push(lineInfo[i].color[0],lineInfo[i].color[1],lineInfo[i].color[2],lineInfo[i].color[3])
+                lineInfo[i].colors.push(lineInfo[i].color[0],lineInfo[i].color[1],lineInfo[i].color[2],lineInfo[i].color[3])
+                lineInfo[i].colors.push(lineInfo[i].color[0],lineInfo[i].color[1],lineInfo[i].color[2],lineInfo[i].color[3])
+
+                // 衰减效果
+                for (let j =1;j<lineInfo[i].times;j++) {
+                  lineInfo[i].colors[ j*4 - 1] -=0.04
+                }
+
+                lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times].x,  lineInfo[i].pointsMod[lineInfo[i].times].y,  lineInfo[i].pointsMod[lineInfo[i].times].z)
+                lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times+1].x,lineInfo[i].pointsMod[lineInfo[i].times+1].y,lineInfo[i].pointsMod[lineInfo[i].times+1].z)
+                lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times+2].x,lineInfo[i].pointsMod[lineInfo[i].times+2].y,lineInfo[i].pointsMod[lineInfo[i].times+2].z)
+                lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times+3].x,lineInfo[i].pointsMod[lineInfo[i].times+3].y,lineInfo[i].pointsMod[lineInfo[i].times+3].z)
+                lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times+4].x,lineInfo[i].pointsMod[lineInfo[i].times+4].y,lineInfo[i].pointsMod[lineInfo[i].times+4].z)
+
+
+                for(let ip=0;ip<lineInfo[i].positions.length;ip++) {
+                  positions[positions.length] = lineInfo[i].positions[ip]
+                }
+
+                for(let ic = 0 ;ic < lineInfo[i].colors.length;ic++) {
+                  colors[colors.length] = lineInfo[i].colors[ic]
+                }
+
+               //  lineInfo[i].buffers =  lineInfo[i].iaWorld.buffer.positionBuffer.initBuffer( lineInfo[i].positions ,lineInfo[i].colors );
+
+                if ( lineInfo[i].times >  lineInfo[i].maxTimes - 10 )
+                {
+                  lineInfo[i].times = 0
+                  lineInfo[i].colors = []
+                  lineInfo[i].positions=[]
+                }
+
+                //lineInfo[i].iaWorld.helloIaWorld( lineInfo[i].buffers,false );
+               // lineInfo[i].iaWorld.drawPoints(lineInfo[i].size,)
               }
-              positions.push(pointsMod[times].x,pointsMod[times].y,pointsMod[times].z)
-              // 清除buffer
-              iaWorld.gl.deleteBuffer(buffers.color)
-              iaWorld.gl.deleteBuffer(buffers.position)
-              // 创建新buffer
+
               buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
-
-              if (times == maxTimes - 1 )
-              {
-                times = 0
-                colors = []
-                positions=[]
-              }
-
               iaWorld.helloIaWorld( buffers,false );
-              iaWorld.drawPoints(6)
+              iaWorld.drawPoints(4)
+
+              positions = []
+              colors = []
 
             }
 
