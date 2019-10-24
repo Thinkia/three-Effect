@@ -238,13 +238,23 @@
                 lineInfo[i].positions.push(lineInfo[i].pointsMod[lineInfo[i].times+4].x,lineInfo[i].pointsMod[lineInfo[i].times+4].y,lineInfo[i].pointsMod[lineInfo[i].times+4].z)
 
 
-                for(let ip=0;ip<lineInfo[i].positions.length;ip++) {
-                  positions[positions.length] = lineInfo[i].positions[ip]
+                // 提高性能
+                for(let ip=0;ip< lineInfo[i].positions.length / 3;ip++) {
+                  if(lineInfo[i].colors[ip*4+3]>0) {
+                      positions[positions.length] = lineInfo[i].positions[ip*3]
+                      positions[positions.length] = lineInfo[i].positions[ip*3 +1]
+                      positions[positions.length] = lineInfo[i].positions[ip*3 +2]
+
+                      colors[colors.length] = lineInfo[i].colors[ip*4]
+                      colors[colors.length] = lineInfo[i].colors[ip*4+1]
+                      colors[colors.length] = lineInfo[i].colors[ip*4+2]
+                      colors[colors.length] = lineInfo[i].colors[ip*4+3]
+                  }
                 }
 
-                for(let ic = 0 ;ic < lineInfo[i].colors.length;ic++) {
-                  colors[colors.length] = lineInfo[i].colors[ic]
-                }
+                // for(let ic = 0 ;ic < lineInfo[i].colors.length;ic++) {
+                //   colors[colors.length] = lineInfo[i].colors[ic]
+                // }
 
                //  lineInfo[i].buffers =  lineInfo[i].iaWorld.buffer.positionBuffer.initBuffer( lineInfo[i].positions ,lineInfo[i].colors );
 
@@ -259,12 +269,19 @@
                // lineInfo[i].iaWorld.drawPoints(lineInfo[i].size,)
               }
 
-              buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
-              iaWorld.helloIaWorld( buffers,false );
-              iaWorld.drawPoints(4)
+              if (buffers) {
+                iaWorld.gl.deleteBuffer(buffers.position)
+                iaWorld.gl.deleteBuffer(buffers.color)
 
-              positions = []
-              colors = []
+                buffers.position = null
+                buffers.color = null
+              }
+                  buffers = iaWorld.buffer.positionBuffer.initBuffer( positions ,colors );
+                  iaWorld.helloIaWorld( buffers,false );
+                  iaWorld.drawPoints(4)
+
+                  positions = []
+                  colors = []
 
             }
 
