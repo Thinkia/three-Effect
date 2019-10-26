@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Exp -- rayTest</title>
+    <title>Exp -- Pic</title>
     <meta charset="utf-8">
     <link type="text/css" rel="stylesheet" href="../../main.css">
 </head>
@@ -19,16 +19,106 @@
   let colorTemp = 0xff0000
   let raycaster = new THREE.Raycaster()
   let mouse = new THREE.Vector2()
+
+  let test = {
+  "rect": [
+    [
+      {"x": -2.6684939861297607, "y": -0.02212500013411045, "z": -0.5814359784126282},
+      {"x": 0.621042013168335, "y": -0.02212500013411045, "z": 0.31920498609542847}
+    ],
+    [
+      {"x": -1.4932589530944824, "y": -0.02212500013411045, "z": -1.17250394821167},
+      {"x": 0.621042013168335, "y": -0.02212500013411045, "z": -0.5814359784126282}
+    ],
+    [
+      {"x": -2.1193220615386963, "y": -0.02212500013411045, "z": -2.1081318855285645},
+      {"x": 0.621042013168335, "y": -0.02212500013411045, "z": -1.17250394821167}
+    ],
+    [
+      {"x": -0.889178991317749, "y": -0.02212500013411045, "z": -3.178997039794922},
+      {"x": 0.621042013168335, "y": -0.02212500013411045, "z": -2.1081318855285645}
+    ],
+    [
+      {"x": -0.5636129975318909, "y": -0.02212500013411045, "z": -3.2558999061584473},
+      {"x": 0.621042013168335, "y": -0.02212500013411045, "z": -3.178997039794922}
+    ]
+  ]
+}
+  let points = []
+  let color = []
+
+  let positions = []
+  let colors = []
   init();
   animate();
   function init() {
-    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 4000 );
-    camera.position.z = 400;
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 400 );
+    camera.position.z = 5;
     scene = new THREE.Scene();
-    let geometry = new THREE.BoxBufferGeometry( boxSize, boxSize, boxSize );
-    let material = new THREE.MeshBasicMaterial( {color:colorAlpha } );
 
-    box = new THREE.Mesh( geometry, material );
+    console.log(test)
+    console.log(rect2Points(test.rect[0][0],test.rect[0][1]))
+
+    let vec3 = new THREE.Vector3( -1.3684939861297603,-0.02212500013411045,0.16856402158737194)
+
+    let vec4 = new THREE.Vector4(1.0,0.0,0.0,1.0)
+
+    let r = 1
+
+    for(let i=0;i<test.rect.length;i++){
+      let result = rect2Points(test.rect[i][0],test.rect[i][1])
+      result.forEach((child) => {
+        points.push(new THREE.Vector3(child.x,child.y,child.z))
+        color.push(new THREE.Vector4(0.0,1.0,0.0,1.0))
+      })
+    }
+
+    g5Station(vec3,vec4,points,color,r)
+
+    for (let i = 0;i<points.length;i++) {
+      positions.push(points[i].x,points[i].y,points[i].z)
+      colors.push(color[i].x,color[i].y,color[i].z,color[i].w)
+    }
+
+
+    let geometry = new THREE.BufferGeometry()
+    geometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    geometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 4))
+    debugger
+    let material = new THREE.RawShaderMaterial({
+
+      vertexShader: `
+                    precision mediump float;
+                    precision mediump int;
+                    uniform mat4 modelViewMatrix;
+                    uniform mat4 projectionMatrix;
+                    attribute vec3 position;
+                    attribute vec4 color;
+
+                    varying  vec4 vColor;
+                    void main() {
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                    gl_PointSize = 8.0;
+                    vColor = color;
+                    }
+                    `,
+      fragmentShader: `
+                    precision mediump float;
+                    precision mediump int;
+                    varying  vec4 vColor;
+
+                    void main() {
+
+                      gl_FragColor =  vec4(vColor)  ;
+
+                    }
+                `,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      transparent: true
+    })
+
+    box = new THREE.Points( geometry, material );
     scene.add( box );
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -37,7 +127,7 @@
     controls = new OrbitControls( camera, renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
-    window.addEventListener( 'click', onClick, false );
+
   }
 
   function onWindowResize() {
@@ -46,16 +136,33 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
-  function onClick( event ) {
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    raycaster.setFromCamera( mouse, camera );
-    let intersect = raycaster.intersectObject( box );
-    if (intersect.length > 0 ) {
-      colorTemp === colorAlpha ? colorTemp = colorBeat : colorTemp = colorAlpha;
-      intersect[0].object.material.color.setHex(colorTemp);
+  function rect2Points(v1,v2,lv = 0.05) {
+
+    let result = []
+    let detaX = v2.x - v1.x
+    let detaZ = v2.z - v1.z
+
+    for(let i=0;i< detaX;i+=lv) {
+      for(let j=0;j<detaZ;j+=lv) {
+        result.push( new THREE.Vector3(v1.x + i,v1.y,v1.z+j))
+      }
+    }
+
+    return result
+  }
+
+  function g5Station(vec3,c,points,cs,r ) {
+    for(let i=0;i<points.length;i++) {
+      let distance = vec3.distanceTo(points[i])
+      if(distance<r) {
+        cs[i].x =( c.x*(1-distance/r) + cs[i].x*distance/r )
+        cs[i].y =( c.y*(1-distance/r) + cs[i].y*distance/r )
+        cs[i].z =( c.z*(1-distance/r) + cs[i].z*distance/r )
+        cs[i].w =( c.w*(1-distance/r) + cs[i].w*distance/r )
+      }
     }
   }
+
   function animate() {
     requestAnimationFrame( animate );
     controls.update()
