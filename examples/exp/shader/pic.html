@@ -6,19 +6,13 @@
     <link type="text/css" rel="stylesheet" href="../../main.css">
 </head>
 <body>
-<script type="module">
+<script type="module">　
 
   import * as THREE from '../../../build/three.module.js';
   import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
   let camera, scene, renderer;
   let controls;
   let box;
-  let boxSize = 100
-  let colorAlpha = 0xff0000
-  let colorBeat = 0x0000ff
-  let colorTemp = 0xff0000
-  let raycaster = new THREE.Raycaster()
-  let mouse = new THREE.Vector2()
 
   let test = {
   "rect": [
@@ -60,10 +54,11 @@
     console.log(rect2Points(test.rect[0][0],test.rect[0][1]))
 
     let vec3 = new THREE.Vector3( -1.3684939861297603,-0.02212500013411045,0.16856402158737194)
+    let vec3Beta = new THREE.Vector3( 0,-0.02212500013411045,0)
 
     let vec4 = new THREE.Vector4(1.0,0.0,0.0,1.0)
 
-    let r = 1
+    let r = 0.5
 
     for(let i=0;i<test.rect.length;i++){
       let result = rect2Points(test.rect[i][0],test.rect[i][1])
@@ -75,19 +70,20 @@
 
     g5Station(vec3,vec4,points,color,r)
 
+    g5Station(vec3Beta,vec4,points,color,r)
+
     for (let i = 0;i<points.length;i++) {
       positions.push(points[i].x,points[i].y,points[i].z)
       colors.push(color[i].x,color[i].y,color[i].z,color[i].w)
     }
 
-
     let geometry = new THREE.BufferGeometry()
     geometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 4))
-    debugger
+
     let material = new THREE.RawShaderMaterial({
 
-      vertexShader: `
+      vertexShader:`
                     precision mediump float;
                     precision mediump int;
                     uniform mat4 modelViewMatrix;
@@ -139,12 +135,22 @@
   function rect2Points(v1,v2,lv = 0.05) {
 
     let result = []
+    let ox = 1,oz = 1
     let detaX = v2.x - v1.x
     let detaZ = v2.z - v1.z
 
+    if(detaX < 0) {
+      detaX = -detaX
+      ox = -1
+    }
+    if(detaZ < 0) {
+      detaZ = -detaZ
+      oz = -1
+    }
+
     for(let i=0;i< detaX;i+=lv) {
       for(let j=0;j<detaZ;j+=lv) {
-        result.push( new THREE.Vector3(v1.x + i,v1.y,v1.z+j))
+        result.push( new THREE.Vector3(v1.x + i*ox,v1.y,v1.z+j*oz))
       }
     }
 
