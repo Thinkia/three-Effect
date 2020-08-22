@@ -1,0 +1,21 @@
+
+.rightPanel .r_container {
+    height: 100%;
+    display: flex;
+
+    .r_c_title { 
+        height: 40px;
+        padding-left: 10px;
+        align-items: center;
+    }
+
+}
+
+.r_c_text {
+    font-family: PingFangSC-Semibold;
+    font-size: 16px;
+    color: #ffffff;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 16px;
+}

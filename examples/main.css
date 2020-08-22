@@ -1,48 +1,62 @@
 body {
-	margin: 0;
-	background-color: #000;
-	color: #fff;
-	font-family: Monospace;
-	font-size: 13px;
-	line-height: 24px;
+    margin: 0;
+    background-color: #000;
+    color: #fff;
+    font-family: Monospace;
+    font-size: 13px;
+    line-height: 24px;
 }
 
 a {
-	color: #ff0;
-	text-decoration: none;
+    color: #ff0;
+    text-decoration: none;
 }
 
 a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 button {
-	cursor: pointer;
-	text-transform: uppercase;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: #1a7af8;
+    border-radius: 6px;
+    font-family: PingFangSC-Regular;
+    font-size: 14px;
+    color: #ffffff;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 14px;
 }
 
 canvas {
-	display: block;
+    display: block;
 }
 
 #info {
-	position: absolute;
-	top: 0px;
-	width: 100%;
-	padding: 10px;
-	box-sizing: border-box;
-	text-align: center;
-	-moz-user-select: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	z-index: 1; /* TODO Solve this in HTML */
+    position: absolute;
+    top: 0px;
+    width: 80%;
+    /* padding: 10px; */
+    box-sizing: border-box;
+    text-align: center;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    z-index: 1; /* TODO Solve this in HTML */
 }
 
 .dg.ac {
-	-moz-user-select: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	z-index: 2 !important; /* TODO Solve this in HTML */
+    top: 500px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    z-index: 2 !important; /* TODO Solve this in HTML */
+}
+
+input {
+    min-width: 30px;
+    border-radius: 4px;
 }

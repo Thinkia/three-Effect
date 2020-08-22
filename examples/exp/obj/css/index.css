@@ -1,0 +1,234 @@
+.header {
+    top: 0;
+    width: 100%;
+    height: 80px;
+    background-color: #2c2e30;
+    z-index: 2 !important;
+    /* TODO Solve this in HTML */
+    position: fixed;
+    display: flex;
+    align-items: center;
+}
+
+.header .left {
+    width: calc(100% - 120px * 1);
+}
+
+.icon {
+    width: 30px;
+    padding-right: 10px;
+}
+.header .left .text {
+    height: 40px;
+    margin-left: 20px;
+    width: 220px;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    font-family: PingFangSC-Semibold;
+    font-size: 30px;
+    color: #e0e0e0;
+    letter-spacing: 0;
+    text-align: center;
+}
+
+.header .right {
+    flex: 1;
+    width: 80px;
+    height: 32px;
+    margin-right: 40px;
+}
+
+.leftPanel {
+    top: 80px;
+    height: 100%;
+    width: 300px;
+    background-color: #2c2e30;
+    z-index: 2 !important;
+    position: fixed;
+}
+.leftPanel .light {
+    background-color: black;
+    margin: 20px;
+    width: 230px;
+    height: 40px;
+    color: #ffffff;
+    letter-spacing: 0;
+    line-height: 16px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    font-family: PingFangSC-Semibold;
+    font-size: 16px;
+}
+
+.leftPanel .selectLight {
+    background-color: rgba(62, 130, 247, 1);
+    margin: 20px;
+    width: 230px;
+    height: 40px;
+    color: #ffffff;
+    letter-spacing: 0;
+    line-height: 16px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    font-family: PingFangSC-Semibold;
+    font-size: 16px;
+}
+
+.leftPanel .light:hover {
+    background-color: rgba(62, 130, 247, 1);
+}
+
+.rightPanel {
+    right: 0;
+    top: 80px;
+    height: calc(100%);
+    width: 300px;
+    background-color: #2c2e30;
+    z-index: 2 !important;
+    position: fixed;
+}
+.rightPanel .rheader {
+    height: 40px;
+    background-color: black;
+    display: flex;
+    align-items: center;
+}
+.rightPanel .rheader .header_text {
+    padding-left: 20px;
+    font-family: PingFangSC-Semibold;
+    font-size: 16px;
+    color: #a6a6a6;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 16px;
+}
+
+.rightPanel .r_container {
+    height: 100%;
+    margin-top: 10px;
+}
+.rightPanel .r_container .r_c_title {
+    margin: 10px;
+    height: 40px;
+    padding-left: 10px;
+    align-items: center;
+    display: flex;
+}
+
+.rightPanel .r_container .r_c_title .r_c_text {
+    width: 200px;
+    font-family: PingFangSC-Semibold;
+    font-size: 16px;
+    color: #ffffff;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 16px;
+}
+
+.rightPanel .r_container .r_c_title .right {
+    height: 30px;
+    flex: 1;
+}
+
+.rightPanel .r_container .r_c_content {
+    height: 30px;
+    margin: 8px 20px;
+    font-family: PingFangSC-Regular;
+    font-size: 14px;
+    color: #e0e0e0;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 14px;
+}
+
+.quseqi {
+    right: 0;
+    width: 100px;
+    border-radius: 4px;
+    height: 20px;
+}
+
+#lightingProgress {
+    height: 20px;
+    padding: 20px 20px 20px 20px;
+    width: 100%;
+    /* height: 100px;
+    margin: 100px auto; */
+    display: flex;
+    align-items: center;
+}
+
+#lightingProgress .progress {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #f1f5fd;
+}
+#lightingProgress .progress .progress-bar {
+    width: 40%;
+    height: 100%;
+    border-radius: 3px;
+    background: #0072ff;
+}
+#lightingProgress .progress .progress-bar .progress-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 15px 5px #0072ff;
+    float: right;
+    position: relative;
+    top: -5px;
+    cursor: pointer;
+}
+
+.r_c_input {
+    margin-right: 20px;
+    height: 20px;
+    width: 80px;
+    display: inline-block;
+    font-family: PingFangSC-Regular;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-align: left;
+}
+
+.sewen {
+    height: 20px;
+    margin: 20px 20px 20px 20px;
+    width: 100%;
+    background-image: linear-gradient(
+        90deg,
+        #fd501a 0%,
+        #ffffff 51%,
+        #74a1fe 100%
+    );
+}
+
+.r_c_context {
+    display: flex;
+    align-items: center;
+    width: 300px;
+    height: 30px;
+    margin-top: 20px;
+}
+
+.applyAll {
+    bottom: 0;
+    margin: 350px 20px 20px 20px;
+    height: 38px;
+    width: 266px;
+    background-color: rgb(0, 0, 0);
+    font-family: PingFangSC-Regular;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 14px;
+    border: 1px solid black;
+    border-radius: 10px;
+}

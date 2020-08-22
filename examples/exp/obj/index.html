@@ -6,179 +6,553 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link type="text/css" rel="stylesheet" href="../../main.css">
+    <link type="text/css" rel="stylesheet" href="./css/index.css" />
 </head>
+
+<script src="./component/jscolor.js"></script>
 
 <body>
     <div id="info"></div>
-
-    <script type="module">
-
-        import * as THREE from '../../../build/three.module.js';
-        import { GUI } from '../../jsm/libs/dat.gui.module.js';
-        import { MTLLoader } from '../../jsm/loaders/MTLLoader.js';
-        import { OBJLoader } from '../../jsm/loaders/OBJLoader.js';
-        import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
-
-        let container;
-
-        let camera, scene, renderer;
-
-        let controls;
-
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
-        var params = {
-            light: 0xffffff,
-            color: 0xffffff,
-            x: 0.1,
-            y: 1.0,
-            z: 0
-        };
-        var obj;
-        var pointLight
-        init();
-        animate();
-
-
-        function init() {
-
-            container = document.createElement('div');
-            document.body.appendChild(container);
-
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.z = 5;
-
-            // scene
-
-            scene = new THREE.Scene();
-
-            const size = 50;
-            const divisions = 50;
-            const gridHelper = new THREE.GridHelper(size, divisions);
-            // scene.add(gridHelper);
-
-            var ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
-            scene.add(ambientLight);
-
-            pointLight = new THREE.PointLight(0xffffff, 0.8);
-
-            const sphereSize = 0.1;
-            const pointLightHelper = new THREE.PointLightHelper(pointLight, sphereSize);
-            console.log(pointLightHelper);
-
-            // cube Texture
-            var texture = new THREE.TextureLoader().load( "../../img/floor/floor.jpg" ,(texture) => {
-                
-                var material = new THREE.MeshBasicMaterial({ color: 0xcccccc, map: texture, side: THREE.BackSide });
-                var geometry = new THREE.BoxBufferGeometry(20, 20, 20);
-
-                var cube = new THREE.Mesh(geometry, material);
-                cube.position.y = 5;
-                scene.add(cube);
-            });
-
-            // side: THREE.BackSide
-
-            scene.add(pointLightHelper);
-            scene.add(pointLight);
-            scene.add(camera);
-
-            // model
-
-            var onProgress = function (xhr) {
-
-                if (xhr.lengthComputable) {
-
-                    var percentComplete = xhr.loaded / xhr.total * 100;
-                    // console.log(Math.round(percentComplete, 2) + '% downloaded');
-
-                }
-
-            };
-
-            var onError = function () { };
-
-            var manager = new THREE.LoadingManager();
-            // manager.addHandler( /\.dds$/i, new DDSLoader() );
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(renderer.domElement);
+    <div class="header">
+        <div class="left">
+            <div class="text">
+                <img src="./css/dengpao.png" class="icon">
+                COOLLIGHT
+            </div>
+        </div>
+        <button class="right">完成</button>
+    </div>
+    <div class="leftPanel">
+        <div name='light' class="light" onclick="changeSelectedLight(0)">
+            <div class="text">
+                灯具1
+            </div>
+        </div>
+        <div name='light' class="light" onclick="changeSelectedLight(1)">
+            <div class="text">
+                灯具2
+            </div>
+        </div>
+        <div name='light' class="light" onclick="changeSelectedLight(2)">
+            <div class="text">
+                灯具3
+            </div>
+        </div>
+        <div name='light' class="light" onclick="changeSelectedLight(3)">
+            <div class="text">
+                灯具4
+            </div>
+        </div>
+    </div>
 
 
-            controls = new OrbitControls(camera, renderer.domElement);
-
-            var gui = new GUI();
-            gui.addColor(params, 'color').onChange(e => {
-                params.color = e;
-            })
-            gui.addColor(params, 'light').onChange(e => {
-                params.light = e;
-            })
-
-            gui.add(params, 'x', -2.0, 2.0);
-            gui.add(params, 'y', -2.0, 2.0);
-            gui.add(params, 'z', -2.0, 2.0);
-            new MTLLoader(manager)
-                .setPath('../../models/lineAni/')
-                .load('multidoor-cabinet.mtl', function (materials) {
-
-                    materials.preload();
-
-                    new OBJLoader(manager)
-                        .setMaterials(materials)
-                        .setPath('../../models/lineAni/')
-                        .load('multidoor-cabinet.obj', function (object) {
-                            scene.add(object);
-                            obj = object;
-                            console.log(obj);
-                        }, onProgress, onError);
-
-                });
+    <div class="rightPanel">
+        <div class="rheader">
+            <div class="header_text">
+                型号-AX2374875
+            </div>
+        </div>
+        <div class="r_container">
+            <div class="r_c_title">
+                <div class="r_c_text">
+                    状态
+                </div>
+                <button class="right" id='lightOn' value=1 onclick="changeLightOn(value)">
+                    开
+                </button>
+            </div>
+            <div class="r_c_title">
+                <div class="r_c_text">
+                    灯光颜色
+                </div>
+                <input value="#ffffff" data-jscolor="" class="quseqi" id='lightColor'
+                    onchange="changeLightColor(jscolor.valueElement.value)">
+            </div>
 
 
-            window.addEventListener('resize', onWindowResize, false);
+            <div class="r_c_title">
+                <div class="r_c_text">
+                    灯光色温 ( k )
+                </div>
+            </div>
+            <div class="r_c_context">
+                <div class='sewen'>
+                </div>
+                <input type="text" class="r_c_input" id='lightTemperature' onchange="changeLightTemperature(value)"
+                    value='0'>
+            </div>
 
-        }
+            <div class="r_c_title">
+                <div class="r_c_text">
+                    亮度 ( lm )
+                </div>
+            </div>
+            <div class="r_c_context">
+                <div id='lightingProgress'>
+                    <div class="progress">
+                        <div class="progress-bar">
+                            <div id='light-thumb' class="progress-thumb" value='10'></div>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" class="r_c_input" id='lightBright' onchange="changeLightBrightness(value)"
+                    value='10'>
+            </div>
+            <div class="r_c_title">
+                <div class="r_c_text">
+                    商品信息
+                </div>
+            </div>
+            <div class="r_c_content">
+                功率 20 W
+            </div>
+            <div class="r_c_content">
+                电压 220 v
+            </div>
 
-        function onWindowResize() {
+            <button class="applyAll" onclick="setAllLight()">
+                属性应用所有灯带
+            </button>
+        </div>
+    </div>
+</body>
 
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
+<script>
+    /** 选中的灯编号 */
+    var selectedLight = 0;
+    /** 灯的颜色*/
+    var lightColor = Array(4).fill('#FFFFFF');
+    /** 开关状态 1=开 0=关*/
+    var lightOn = Array(4).fill(1)
+    /** 色温*/
+    var lightTemperature = Array(4).fill(0)
+    /** 灯亮度 */
+    var lightBright = Array(4).fill(10)
 
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+    function setAllLight() {
+        lightColor.fill(lightColor[selectedLight]);
+        lightOn.fill(lightOn[selectedLight]);
+        lightTemperature.fill(lightTemperature[selectedLight]);
+        lightBright.fill(lightBright[selectedLight]);
+        console.log(lightColor, lightOn, lightTemperature, lightBright)
+    }
 
-        }
+    function changeLightOn(v) {
+        lightOn[selectedLight] = Number(v) === 0 ? 1 : 0;
+        console.log(lightOn[selectedLight])
+        document.getElementById("lightOn").value = lightOn[selectedLight];
+        document.getElementById("lightOn").textContent = lightOn[selectedLight] ? '开' : '关';
+        console.log(lightOn)
+    }
+
+    function changeLightBrightness(value) {
+        lightBright[selectedLight] = Number(value) !== NaN ? Number(value) : 0;
+        document.getElementById("light-thumb").value = lightBright[selectedLight];
+        document.getElementById("lightingProgress").querySelector(".progress-bar").style.width = document.getElementById("light-thumb").value + "%";
+        console.log(lightBright);
+    }
+
+    function changeLightTemperature(value) {
+        lightTemperature[selectedLight] = value;
+        console.log(lightTemperature);
+    }
+    function changeSelectedLight(lightNum) {
+        selectedLight = lightNum;
+        document.getElementById("lightOn").value = lightOn[selectedLight];
+        document.getElementById("lightOn").textContent = lightOn[selectedLight] ? '开' : '关';
+        document.getElementById("lightColor").value = lightColor[selectedLight];
+        document.getElementById("lightTemperature").value = lightTemperature[selectedLight];
+        document.getElementById("lightBright").value = lightBright[selectedLight];
+        document.getElementById("light-thumb").value = lightBright[selectedLight];
+        document.getElementById("lightingProgress").querySelector(".progress-bar").style.width = document.getElementById("light-thumb").value + "%";
+        changeStyle()
+        console.log(selectedLight);
+    }
+    // function changeSelectedLight(lightNum) {
+    //     selectedLight = lightNum;
+    //     document.getElementById("lightOn").value = lightOn[selectedLight];
+    //     document.getElementById("lightOn").textContent = lightOn[selectedLight] ? '开' : '关';
+    //     document.getElementById("lightColor").value = lightColor[selectedLight];
+    //     document.getElementById("lightTemperature").value = lightTemperature[selectedLight];
+    //     document.getElementById("lightBright").value = lightBright[selectedLight];
+    //     document.getElementById("light-thumb").value = lightBright[selectedLight];
+    //     document.getElementById("lightingProgress").querySelector(".progress-bar").style.width = document.getElementById("light-thumb").value + "%";
+    //     console.log(selectedLight);
+    // }
+
+    function changeLightColor(lightcolor) {
+        lightColor[selectedLight] = lightcolor;
+        console.log(lightColor, lightcolor)
+    }
+
+    function changeStyle() {
+        document.getElementsByName('light').forEach(v => v.className = 'light');
+        document.getElementsByName('light')[selectedLight].className = 'selectLight';
+    }
+
+    changeStyle()
+
+</script>
+<script type="module">
+
+    import * as THREE from '../../../build/three.module.js';
+    import { GUI } from '../../jsm/libs/dat.gui.module.js';
+    import { MTLLoader } from '../../jsm/loaders/MTLLoader.js';
+    import { OBJLoader } from '../../jsm/loaders/OBJLoader.js';
+    import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+    import { RectAreaLightUniformsLib } from '../../jsm/lights/RectAreaLightUniformsLib.js';
+    let container;
+
+    let camera, scene, renderer;
+
+    let controls;
+    var rectLight
+    let windowHalfX = window.innerWidth / 2;
+    let windowHalfY = window.innerHeight / 2;
+    var params = {
+        light: 0xffffff,
+        color: 0xffffff,
+        x: -440,
+        y: 2200,
+        z: 440
+    };
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+
+    var obj;
+    var pointLight;
+    var pointLight2;
+    var pointLight3;
+    var activeLight;
+    var lightBox;
+    var lightBox2;
+    var activeObj;
+    var rectLightMesh;
+    var spotLight;
+    init();
+    animate();
+    window.addEventListener('mouseclick', (e) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    }, false);
+
+    function init() {
+
+        container = document.createElement('div');
+        document.body.appendChild(container);
+
+        camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 50000);
+        camera.position.x = 5000;
+        camera.position.y = 5000;
+
+        // scene
+        scene = new THREE.Scene();
+
+        var ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
+
+        scene.add(ambientLight);
+
+        // var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        // directionalLight.position.copy(new THREE.Vector3(207, 1942, -1310))
+        // scene.add(directionalLight);
+
+        // point
+        pointLight = new THREE.PointLight(0xffffff, 0.4);
+        pointLight2 = new THREE.PointLight(0xffffff, 0.4);
+        pointLight3 = new THREE.PointLight(0xffffff, 0.4);
+        pointLight.position.copy(new THREE.Vector3(207, 1942, -1310));
+        pointLight2.position.copy(new THREE.Vector3(0, 2300, 1600))
+        pointLight3.position.copy(new THREE.Vector3(0, 2300, 1000))
+        pointLight2.distance = 2300;
+        pointLight3.distance = 800;
+        // pointLight2.decay = 0.1;
+        //  spot
+        spotLight = new THREE.SpotLight(0x464684);
+        spotLight.position.set(0, 2300, 800);
+        spotLight.angle = Math.PI;
+        spotLight.intensity = 0.6;
+        spotLight.penumbra = 0.01;
+        spotLight.distance = 1800;
+        scene.add(spotLight);
+        // var targetObject = new THREE.Object3D();
+        // targetObject.position.set(new THREE.Vector3(
+        //     spotLight.position.x,
+        //     spotLight.position.y - 1000,
+        //     spotLight.position.z,
+        // ));
+        // scene.add(targetObject);
+
+        // spotLight.target = targetObject;
+
+        // const sphereSize = 300;
+        // const pointLightHelper = new THREE.PointLightHelper(pointLight, sphereSize);
+        // const pointLightHelper2 = new THREE.PointLightHelper(pointLight2, sphereSize);
+
+        var width = 500;
+        var height = 1800;
+        var intensity = 2500;
+
+        // reat
+        RectAreaLightUniformsLib.init();
+        rectLight = new THREE.RectAreaLight(0xff0000, intensity, width, height);
+        rectLight.position.set(-440, 2260, 700);
+        rectLight.lookAt(rectLight.position.x, rectLight.position.y - 1000, rectLight.position.z);
+        scene.add(rectLight)
+        activeLight = rectLight;
+        rectLightMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(), new THREE.MeshBasicMaterial({ side: THREE.BackSide }));
+        rectLightMesh.scale.x = rectLight.width;
+        rectLightMesh.scale.y = rectLight.height;
+        rectLight.add(rectLightMesh);
+        var rectLightMeshBack = new THREE.Mesh(new THREE.PlaneBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x080808 }));
+        rectLightMesh.add(rectLightMeshBack);
+
+        // side: THREE.BackSide
+
+        scene.add(pointLight);
+        scene.add(pointLight2);
+
+        scene.add(camera);
 
 
-        function animate() {
+        var Hemilight = new THREE.HemisphereLight(0xffffbb, 0x080820, 5000);
+        var Hemihelper = new THREE.HemisphereLightHelper(Hemilight, 50000);
+        scene.add(Hemihelper);
+        // scene.add(Hemilight);
+        // model
 
-            controls.update()
+        var onProgress = function (xhr) {
 
-            requestAnimationFrame(animate);
-            render();
+            if (xhr.lengthComputable) {
 
-        }
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                // console.log(Math.round(percentComplete, 2) + '% downloaded');
 
-        function render() {
-            if (obj) {
-                obj.children.forEach(child => {
-                    child.material.color.set(params.color);
-                });
-                // console.log(params.color);
-                pointLight.color.set(params.light);
-                pointLight.position.x = params.x;
-                pointLight.position.y = params.y;
-                pointLight.position.z = params.z;
             }
 
-            renderer.render(scene, camera);
+        };
 
+        var onError = function () { };
+
+        var manager = new THREE.LoadingManager();
+        // manager.addHandler( /\.dds$/i, new DDSLoader() );
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+
+        controls = new OrbitControls(camera, renderer.domElement);
+
+        // var gui = new GUI();
+        // gui.addColor(params, 'color').onChange(e => {
+        //     params.color = e;
+        // })
+        // gui.addColor(params, 'light').onChange(e => {
+        //     params.light = e;
+        //     activeLight.color.set(params.light);
+        //     rectLightMesh.material.color.set(params.light);
+        //     spotLight.color.set(params.light);
+        // })
+
+        // gui.add(params, 'x', -5000, 5000).onChange(x => {
+        //     spotLight.position.x = x;
+        //     activeLight.position.x = x;
+
+        // });
+        // gui.add(params, 'y', -5000, 5000).onChange(y => {
+        //     spotLight.position.y = y;
+        //     activeLight.position.y = y;
+        // });
+        // gui.add(params, 'z', -5000, 5000).onChange(z => {
+        //     spotLight.position.z = z;
+        //     activeLight.position.z = z;
+        // });
+        new MTLLoader(manager)
+            .setPath('../../models/lineAni/')
+            .load('rd_light_01.mtl', function (materials) {
+
+                materials.preload();
+
+                new OBJLoader(manager)
+                    .setMaterials(materials)
+                    .setPath('../../models/lineAni/')
+                    .load('file.obj', function (object) {
+                        scene.add(object);
+                        obj = object;
+                        // Texture
+                        new THREE.TextureLoader().load("../../models/lineAni/11.jpg", (texture) => {
+
+                            obj.children.forEach(child => {
+
+                                child.material.map = texture;
+                                child.material.needsUpdate = true;
+                                if (child.name.includes('Object05')) {
+                                    // child.material.evmap = texture;
+                                    child.material.transparent = true;
+                                    child.material.opacity = 0.5;
+                                }
+
+                            })
+                        });
+                        console.log(obj)
+                        new THREE.TextureLoader().load("../../models/lineAni/33.jpg", (texture) => {
+                            obj.children.forEach(child => {
+                                if (child.name.includes('Chamfer')) {
+                                    // child.material = child.material.clone();
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
+                                }
+                                if (child.name.includes('Object04')) {
+                                    // child.material.map = texture;
+                                    // child.material.needsUpdate = true;
+                                }
+                                if (child.name.includes('Object02')) {
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
+                                }
+                                if (child.name.includes('Object01')) {
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
+                                }
+                            })
+                        });
+                        new THREE.TextureLoader().load("../../models/lineAni/44.jpg", (texture) => {
+                            obj.children.forEach(child => {
+                                if (child.name.includes('Object04')) {
+                                    // child.material = child.material.clone();
+                                    child.material.map = texture;
+                                    child.material.needsUpdate = true;
+                                }
+
+                            })
+                        });
+                        new THREE.TextureLoader().load("../../models/lineAni/22.jpg", (texture) => {
+                            obj.children[20].material.map = texture;
+                            obj.children[20].material.needsUpdate = true;
+                        });
+                        // 5 yifu   25 diannao 
+                        obj.children[25].material.transparent = true;
+                        obj.children[25].material.opacity = 0;
+
+                    }, onProgress, onError);
+
+            });
+
+
+        window.addEventListener('resize', onWindowResize, false);
+        // Texture
+        new THREE.TextureLoader().load("../../img/floor/floor.jpg", (texture) => {
+            var geometry = new THREE.BoxBufferGeometry(10000, 10000, 10000);
+            var material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
+            var cube = new THREE.Mesh(geometry, material);
+            cube.position.y = 4999;
+            scene.add(cube);
+
+        });
+    }
+
+    function onWindowResize() {
+
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+
+    function animate() {
+
+        controls.update()
+
+        requestAnimationFrame(animate);
+        render();
+
+    }
+
+    function render() {
+
+        if (obj) {
+            // obj.children.forEach(child => {
+            //     child.material.color.set(params.color);
+            // });
+            // // console.log(params.color);
+            spotLight.color.set(lightColor[0]);
+            pointLight2.color.set(lightColor[0]);
+            pointLight3.color.set(lightColor[0]);
+            spotLight.intensity = lightBright[0] / 100.0
+            pointLight2.intensity = lightBright[0] / 100.0
+            pointLight3.intensity = lightBright[0] / 100.0
+
+            rectLightMesh.material.color.set(lightColor[0])
+            rectLightMesh.material.transparent = true;
+            rectLightMesh.material.opacity = lightBright[0] / 100.0
         }
 
-    </script>
+        renderer.render(scene, camera);
+
+    }
+
+</script>
+
+<script>
+    var slider = {
+        use: function (id) {
+            var self = this;
+            self.slider = document.getElementById(id);
+            self.bar = self.slider.querySelector(".progress-bar");
+            self.thumb = self.slider.querySelector(".progress-thumb");
+            self.bar.style.width = self.thumb.getAttribute('value') + "%";
+            self.slider.addEventListener("mousedown", function (e) {
+                if (e.button == 0) {
+                    // 判断点击左键
+                    self.mDown = true;
+                    self.beginX = e.offsetX;
+                    self.positionX = e.offsetX;
+                    self.beginClientX = e.clientX;
+                    self.sliderLong = parseInt(self.getStyle(self.slider, "width"));
+                    var per = parseInt((self.positionX / self.sliderLong) * 100);
+                    self.bar.style.width = per + "%";
+                }
+            });
+            document.addEventListener("mousemove", function (e) {
+                if (self.mDown) {
+                    var moveX = e.clientX - self.beginClientX;
+                    self.positionX =
+                        self.beginX + moveX > self.sliderLong
+                            ? self.sliderLong
+                            : self.beginX + moveX < 0
+                                ? 0
+                                : self.beginX + moveX;
+                    var per = parseInt((self.positionX / self.sliderLong) * 100);
+                    self.bar.style.width = per + "%";
+                    document.getElementById('light-thumb').value = per;
+                    document.getElementById('lightBright').value = per;
+                    lightBright[selectedLight] = per;
+                    console.log(lightBright)
+                }
+            });
+            document.addEventListener("mouseup", function (e) {
+                if (e.button == 0) {
+                    self.mDown = false;
+                }
+            });
+        },
+        getStyle: function (obj, styleName) {
+            // 获取元素样式的方法
+            if (obj.currentStyle) {
+                return obj.currentStyle[styleName];
+            } else {
+                return getComputedStyle(obj, null)[styleName];
+            }
+        },
+    };
+    slider.use('lightingProgress');
+
+</script>
 
 </body>
 
